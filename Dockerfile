@@ -46,7 +46,7 @@ RUN CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | cut -d'.' -f1,
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY req.txt .
 RUN pip install --no-cache-dir -r req.txt
 
 COPY . .
