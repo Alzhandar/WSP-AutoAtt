@@ -41,12 +41,16 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | cut -d'.' -f1,2,3) \
-    && CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION") \
-    && wget -q -O /tmp/chromedriver.zip "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" \
+RUN CHROME_MAJOR_VERSION=$(google-chrome --version | awk '{print $3}' | cut -d'.' -f1) \
+    && echo "Chrome major version: ${CHROME_MAJOR_VERSION}" \
+    && wget -q -O /tmp/chromedriver_latest_release.txt "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_MAJOR_VERSION}" \
+    && CHROMEDRIVER_VERSION=$(cat /tmp/chromedriver_latest_release.txt) \
+    && echo "Using ChromeDriver version: ${CHROMEDRIVER_VERSION}" \
+    && wget -q -O /tmp/chromedriver.zip "https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip" \
     && unzip /tmp/chromedriver.zip -d /usr/local/bin/ \
-    && rm /tmp/chromedriver.zip \
-    && chmod +x /usr/local/bin/chromedriver
+    && rm /tmp/chromedriver.zip /tmp/chromedriver_latest_release.txt \
+    && chmod +x /usr/local/bin/chromedriver \
+    && chromedriver --version
 
 WORKDIR /app
 
