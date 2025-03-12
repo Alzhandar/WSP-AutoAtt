@@ -1,7 +1,11 @@
 FROM python:3.10-slim
 
+ENV TZ=Asia/Almaty
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 RUN apt-get update && apt-get install -y \
     wget \
+    curl \
     gnupg \
     unzip \
     xvfb \
@@ -25,13 +29,13 @@ RUN apt-get update && apt-get install -y \
     libcairo2 \
     libu2f-udev \
     libvulkan1 \
-    default-jre \
     psmisc \
+    procps \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' \
+    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google.list \
     && apt-get update \
     && apt-get install -y google-chrome-stable \
     && apt-get clean \
@@ -52,6 +56,8 @@ RUN pip install --no-cache-dir -r req.txt
 COPY . .
 
 RUN mkdir -p /app/logs /app/chrome_sessions
-RUN chmod -R 755 /app/logs /app/chrome_sessions
+RUN chmod -R 777 /app/logs /app/chrome_sessions
 
-CMD ["uvicorn", "autoattend.api.routes:app", "--host", "0.0.0.0", "--port", "8000"]
+RUN if ! grep -q "import time" backend.py; then sed -i '1s/^/import time\n/' backend.py; fi
+
+CMD ["python", "backend.py"]
