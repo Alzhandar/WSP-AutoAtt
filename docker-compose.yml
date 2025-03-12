@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: attendance-api
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./logs:/app/logs
+      - ./chrome_sessions:/app/chrome_sessions
+    environment:
+      - USERNAME=${USERNAME}
+      - PASSWORD=${PASSWORD}
+      - UPDATE_INTERVAL=${UPDATE_INTERVAL:-60}
+      - WAIT_TIME=${WAIT_TIME:-10}
+      - SHOW_UI=false
+      - PORT=8000
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
+    command: uvicorn autoattend.api.routes:app --host 0.0.0.0 --port 8000 --reload
+
+  bot:
+    build: .
+    container_name: attendance-bot
+    restart: always
+    volumes:
+      - ./logs:/app/logs
+      - ./chrome_sessions:/app/chrome_sessions
+    environment:
+      - USERNAME=${USERNAME}
+      - PASSWORD=${PASSWORD}
+      - UPDATE_INTERVAL=${UPDATE_INTERVAL:-60}
+      - WAIT_TIME=${WAIT_TIME:-10}
+      - SHOW_UI=false
+    command: python -m autoattend.bot.attendance_bot
