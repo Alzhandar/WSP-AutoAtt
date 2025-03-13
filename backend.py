@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
-from main import attend_bot, AttendanceBot
+from main import attend_bot, AttendanceBot, USERNAME, PASSWORD
 
 load_dotenv()
 
@@ -99,6 +99,38 @@ async def check_auth(username: str, password: str) -> bool:
 async def root():
     return {"message": "Attendance Bot API is running", "status": "active"}
 
+@app.get("/auth/env-check", response_model=AuthResponse)
+async def check_env_authentication():
+    try:
+        if not USERNAME or not PASSWORD:
+            return {
+                "message": "Отсутствуют учетные данные",
+                "authenticated": False,
+                "status": "error"
+            }
+            
+        logger.info("Проверка авторизации с учетными данными")
+        is_authenticated = await check_auth(USERNAME, PASSWORD)
+        
+        if is_authenticated:
+            return {
+                "message": "Авторизация с данными выполнена успешно",
+                "authenticated": True,
+                "status": "success"
+            }
+        else:
+            return {
+                "message": "Не удалось авторизоваться с данными. Проверьте логин и пароль",
+                "authenticated": False,
+                "status": "failed"
+            }
+    except Exception as e:
+        logger.error(f"Ошибка при проверке авторизации с данными из .env: {e}")
+        return {
+            "message": f"Ошибка при проверке авторизации: {str(e)}",
+            "authenticated": False,
+            "status": "error"
+        }
 
 @app.post("/auth/check", response_model=AuthResponse)
 async def check_authentication(data: AuthCheckRequest):
