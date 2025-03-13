@@ -81,20 +81,14 @@ def run_attendance_bot(task_id: str, username: str, password: str, show_ui: bool
 
 
 async def check_auth(username: str, password: str) -> bool:
-    """Проверка авторизации пользователя"""
     try:
-        # Создаем экземпляр бота только для проверки авторизации
         bot = AttendanceBot(username, password, show_ui=False)
         try:
-            # Настраиваем драйвер
             bot.setup_driver()
-            # Переходим на сайт авторизации
             bot.driver.get(os.getenv("BASE_URL", "https://wsp.kbtu.kz/RegistrationOnline"))
-            # Пытаемся авторизоваться
             auth_success = bot.login()
             return auth_success
         finally:
-            # Убедимся, что ресурсы освобождены в любом случае
             bot.cleanup()
     except Exception as e:
         logger.error(f"Error during authentication check: {e}")
@@ -108,7 +102,6 @@ async def root():
 
 @app.post("/auth/check", response_model=AuthResponse)
 async def check_authentication(data: AuthCheckRequest):
-    """Проверка авторизации пользователя"""
     try:
         is_authenticated = await check_auth(data.username, data.password)
         

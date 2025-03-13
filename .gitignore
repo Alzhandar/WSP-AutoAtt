@@ -1,1 +1,6 @@
 .env
+*.env
+.env.*
+
+chrome_sessions/
+logs/

@@ -181,7 +181,6 @@ class AttendanceBot:
             return 0
             
     def run(self) -> None:
-        """Основной цикл работы бота."""
         if not self.driver:
             logger.error("Driver is not initialized")
             return
