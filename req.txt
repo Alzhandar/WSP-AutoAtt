@@ -1,20 +1,46 @@
-attrs==24.2.0
-certifi==2024.8.30
-exceptiongroup==1.2.2
-h11==0.14.0
-idna==3.10
-outcome==1.3.0.post0
-PySocks==1.7.1
+# Веб-драйвер и автоматизация
 selenium==4.24.0
-sniffio==1.3.1
-sortedcontainers==2.4.0
+webdriver-manager==4.0.1
+undetected-chromedriver==3.5.4
+
+# Асинхронная работа
 trio==0.26.2
 trio-websocket==0.11.1
-typing_extensions==4.12.2
-urllib3==2.2.3
-websocket-client==1.8.0
-wsproto==1.2.0
-fastapi==0.95.0
+sniffio==1.3.1
+h11==0.14.0
+sortedcontainers==2.4.0
+exceptiongroup==1.2.2
+outcome==1.3.0.post0
+
+# API и сервер
+fastapi==0.103.2
 uvicorn==0.25.0
-psutil==5.9.6
+pydantic==2.4.2
+typing_extensions>=4.9.0
+
+# Работа с файлами и переменными окружения
 python-dotenv==1.0.1
+attrs==24.2.0
+idna==3.4
+
+# Системные утилиты
+psutil==5.9.6
+certifi==2024.8.30
+PySocks==1.7.1
+urllib3==2.0.7
+
+# Веб-соединения
+websocket-client>=1.8.0
+wsproto==1.2.0
+
+# Асинхронный HTTP-клиент
+httpx==0.25.0
+
+# Логирование и отладка
+rich==13.7.0
+starlette==0.27.0
+
+# Вместо обычного psutil
+psutil==5.9.6; platform_machine != "aarch64" and platform_machine != "arm64"
+# Для ARM64
+psutil-bin==5.9.6; platform_machine == "aarch64" or platform_machine == "arm64"
