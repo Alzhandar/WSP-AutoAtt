@@ -1,50 +1,12 @@
-version: '3.8'
+version: '3'
 
 services:
-  api:
+  wsp-autoattend:
     build: .
-    container_name: attendance-api
-    restart: always
     ports:
       - "8000:8000"
-    volumes:
-      - ./logs:/app/logs
-      - ./screenshots:/app/screenshots
-      - ./api_logs:/app/api_logs
-      - ./chrome_sessions:/app/chrome_sessions
     environment:
-      - USERNAME=${USERNAME}
-      - PASSWORD=${PASSWORD}
-      - UPDATE_INTERVAL=${UPDATE_INTERVAL:-60}
-      - WAIT_TIME=${WAIT_TIME:-15}
-      - SHOW_UI=false
-      - PORT=8000
-      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
-      - DEBUG_MODE=true
-    command: python backend.py
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
-      interval: 60s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
-
-  bot:
-    build: .
-    container_name: attendance-bot
-    restart: always
+      - TZ=Asia/Almaty
+    restart: unless-stopped
     volumes:
-      - ./logs:/app/logs
-      - ./screenshots:/app/screenshots
       - ./chrome_sessions:/app/chrome_sessions
-    environment:
-      - USERNAME=${USERNAME}
-      - PASSWORD=${PASSWORD}
-      - UPDATE_INTERVAL=${UPDATE_INTERVAL:-120}
-      - WAIT_TIME=${WAIT_TIME:-15}
-      - SHOW_UI=false
-      - DEBUG_MODE=true
-    command: python main.py
-    depends_on:
-      api:
-        condition: service_healthy

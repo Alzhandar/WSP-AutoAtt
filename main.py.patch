@@ -1,0 +1,70 @@
+--- main.py
++++ main.py
+@@ -149,17 +149,40 @@
+         """Настройка драйвера Chrome с нужными опциями"""
+         self.logger.info("Initializing Chrome driver...")
+         
+-        # Создаем уникальный идентификатор сессии
++        # Создаем уникальную директорию для сессии Chrome
+         session_id = uuid.uuid4().hex[:8]
+         session_dir = f"/app/chrome_sessions/chrome_session_{time.strftime('%Y%m%d_%H%M%S')}_{session_id}"
+         self.chrome_session_dir = session_dir
+         os.makedirs(session_dir, exist_ok=True)
+         self.logger.info(f"Created session directory: {session_dir}")
+         
++        # Определяем архитектуру системы
++        import platform
++        is_arm64 = platform.machine() in ('arm64', 'aarch64')
++        
++        # Настройка опций Chrome
+         options = webdriver.ChromeOptions()
+         options.add_argument(f"--user-data-dir={session_dir}")
+         options.add_argument("--no-first-run")
+         options.add_argument("--no-default-browser-check")
+         
++        # Для ARM64 используем установленный Chromium
++        if is_arm64:
++            # Путь к исполняемому файлу Chromium для ARM64
++            options.binary_location = "/usr/bin/chromium"
++            chromedriver_path = "/usr/bin/chromedriver"
++            
++            # Подробная отладка для ARM64
++            self.logger.info(f"Running on ARM64 architecture. Using Chromium at {options.binary_location}")
++            self.logger.info(f"ChromeDriver path: {chromedriver_path}")
++            
++            # Проверяем существование файлов
++            if not os.path.exists(options.binary_location):
++                self.logger.error(f"Chromium binary not found at {options.binary_location}")
++            if not os.path.exists(chromedriver_path):
++                self.logger.error(f"ChromeDriver not found at {chromedriver_path}")
++        else:
++            self.logger.info("Running on x86_64 architecture. Using standard Chrome")
++        
+         # Включаем или отключаем UI в зависимости от настроек
+         if not self.show_ui:
+             self.logger.info("Running in headless mode")
+@@ -171,8 +194,20 @@
+         options.add_argument("--disable-extensions")
+         options.add_argument("--window-size=1920,1080")
+         self.logger.debug(f"Chrome options: {options.arguments}")
++        
++        # Создаем сервис и драйвер
+         self.logger.info("Creating Chrome service...")
+-        service = Service()
+-        self.logger.info("Initializing Chrome driver...")
+-        self.driver = webdriver.Chrome(service=service, options=options)
++        
++        try:
++            if is_arm64:
++                # Для ARM64 явно указываем путь к chromedriver
++                service = Service(executable_path=chromedriver_path)
++                self.logger.info("Initializing Chrome driver with explicit path...")
++                self.driver = webdriver.Chrome(service=service, options=options)
++            else:
++                # Стандартный способ для x86_64
++                service = Service()
++                self.logger.info("Initializing Chrome driver...")
++                self.driver = webdriver.Chrome(service=service, options=options)
++        except Exception as e:
++            self.logger.error(f"Failed to initialize Chrome driver: {str(e)}")
++            raise
