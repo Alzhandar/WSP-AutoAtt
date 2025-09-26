@@ -9,3 +9,15 @@ services:
     restart: unless-stopped
     volumes:
       - ./chrome_sessions:/app/chrome_sessions
+
+  telegram-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.telegram
+    environment:
+      - TZ=Asia/Almaty
+      - TELEGRAM_TOKEN=8375288159:AAGlk5QRly4f70B0bTK4_pTEYeVAzTx02ho
+      - ATTENDANCE_API_URL=http://wsp-autoattend:8000
+    restart: unless-stopped
+    depends_on:
+      - wsp-autoattend

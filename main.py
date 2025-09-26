@@ -143,25 +143,100 @@ def try_to_attend(selenium_driver):
 
     try:
         print("🔍 Ищем кнопки 'Отметиться'...")
-        button_divs = wait.until(
-            EC.presence_of_all_elements_located(
-                (By.XPATH, "//div[span/span[@class='v-button-caption' and text()='Отметиться']]")
-            )
-        )
+        
+        # Дадим странице время на загрузку
+        time.sleep(3)
+        
+        # Попробуем несколько различных селекторов
+        selectors = [
+            "//div[span/span[@class='v-button-caption' and text()='Отметиться']]",
+            "//span[@class='v-button-caption' and text()='Отметиться']",
+            "//div[contains(@class, 'v-button') and contains(text(), 'Отметиться')]",
+            "//*[text()='Отметиться']",
+            "//button[contains(text(), 'Отметиться')]",
+            "//*[contains(@class, 'button') and contains(text(), 'Отметиться')]"
+        ]
+        
+        button_divs = []
+        
+        for i, selector in enumerate(selectors, 1):
+            try:
+                print(f"   🔍 Пробуем селектор #{i}: {selector[:50]}...")
+                elements = driver.find_elements(By.XPATH, selector)
+                if elements:
+                    print(f"   ✅ Найдено {len(elements)} элементов с селектором #{i}")
+                    button_divs = elements
+                    break
+                else:
+                    print(f"   ❌ Селектор #{i} не дал результатов")
+            except Exception as e:
+                print(f"   ⚠️ Ошибка с селектором #{i}: {e}")
+                continue
+        
+        # Если ничего не найдено, ищем в HTML коде
+        if not button_divs:
+            print("🔍 Анализируем HTML код страницы...")
+            page_source = driver.page_source
+            
+            # Ищем слово "отметиться" в разных регистрах
+            variations = ["Отметиться", "отметиться", "ОТМЕТИТЬСЯ"]
+            found_variations = []
+            
+            for variation in variations:
+                if variation in page_source:
+                    found_variations.append(variation)
+            
+            if found_variations:
+                print(f"📝 В HTML найдены варианты: {found_variations}")
+                
+                # Попробуем найти элементы с этими текстами
+                for variation in found_variations:
+                    try:
+                        elements = driver.find_elements(By.XPATH, f"//*[contains(text(), '{variation}')]")
+                        if elements:
+                            print(f"✅ Найдено {len(elements)} элементов с текстом '{variation}'")
+                            button_divs = elements
+                            break
+                    except Exception as e:
+                        print(f"⚠️ Ошибка поиска '{variation}': {e}")
+            else:
+                print("❌ Текст 'Отметиться' не найден в HTML коде")
+                # Показываем фрагмент HTML для отладки
+                print("🔍 Ищем похожие кнопки в HTML...")
+                
+                # Попробуем найти любые кнопки
+                try:
+                    all_buttons = driver.find_elements(By.XPATH, "//button | //*[contains(@class, 'button')] | //*[contains(@class, 'v-button')]")
+                    print(f"📋 Всего найдено кнопок на странице: {len(all_buttons)}")
+                    
+                    for i, btn in enumerate(all_buttons[:5]):  # Показываем первые 5
+                        try:
+                            btn_text = btn.text.strip()
+                            btn_class = btn.get_attribute('class')
+                            print(f"   Кнопка {i+1}: '{btn_text}' (класс: {btn_class[:50]}...)")
+                        except:
+                            print(f"   Кнопка {i+1}: не удалось получить информацию")
+                            
+                except Exception as e:
+                    print(f"❌ Ошибка анализа кнопок: {e}")
 
         if button_divs:
             print(f"🎯 Найдено {len(button_divs)} кнопок для отметки посещения")
             
             for i, button_div in enumerate(button_divs, 1):
-                if button_div is not None:
+                try:
                     print(f"✅ Нажимаем кнопку #{i}")
+                    driver.execute_script("arguments[0].scrollIntoView();", button_div)
+                    time.sleep(1)
                     button_div.click()
                     print(f"   Посещение #{i} отмечено!")
-                    time.sleep(1)
+                    time.sleep(2)
+                except Exception as e:
+                    print(f"❌ Ошибка при нажатии кнопки #{i}: {e}")
             
-            print(f"🎉 Успешно отмечено посещение для {len(button_divs)} дисциплин!")
+            print(f"🎉 Процесс отметки завершен для {len(button_divs)} элементов!")
         else:
-            print("ℹ️  Кнопки 'Отметиться' не найдены")
+            print("ℹ️  Кнопки 'Отметиться' не найдены ни одним из способов")
             
     except TimeoutException:
         print("⏰ Тайм-аут: кнопки 'Отметиться' не найдены в течение ожидаемого времени")

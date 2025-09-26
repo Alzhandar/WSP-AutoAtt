@@ -1,6 +1,7 @@
 import uvicorn
 import asyncio
 import threading
+from datetime import datetime
 from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -9,7 +10,14 @@ from main import attend_bot
 app = FastAPI()
 
 # Статус бота
-bot_status = {"running": False, "message": "Bot not started", "last_error": None}
+bot_status = {
+    "running": False, 
+    "message": "Bot not started", 
+    "last_error": None,
+    "subjects_found": False,
+    "last_attendance_check": None,
+    "attendance_marked": False
+}
 
 app.add_middleware(
     CORSMiddleware,
@@ -98,6 +106,56 @@ async def check_page_content(url: str = "https://wsp.kbtu.kz/StudentSchedule"):
         return {"status": "success", "data": result}
     except Exception as e:
         return {"status": "error", "error": str(e)}
+
+
+@app.get("/notifications")
+async def get_notifications():
+    """Получить уведомления для Telegram бота"""
+    global bot_status
+    
+    notifications = []
+    
+    # Проверяем новые события
+    if bot_status.get("subjects_found") and not bot_status.get("attendance_marked"):
+        notifications.append({
+            "type": "subjects_available",
+            "message": "🎯 Найдены предметы для отметки посещения!",
+            "timestamp": bot_status.get("last_attendance_check")
+        })
+    
+    if bot_status.get("attendance_marked"):
+        notifications.append({
+            "type": "attendance_marked", 
+            "message": "✅ Посещение отмечено успешно!",
+            "timestamp": bot_status.get("last_attendance_check")
+        })
+        # Сбрасываем флаг после отправки уведомления
+        bot_status["attendance_marked"] = False
+    
+    if bot_status.get("last_error"):
+        notifications.append({
+            "type": "error",
+            "message": f"❌ Ошибка: {bot_status['last_error']}",
+            "timestamp": datetime.now().isoformat()
+        })
+    
+    return {"notifications": notifications, "count": len(notifications)}
+
+
+@app.post("/webhook/attendance-update")
+async def attendance_webhook(data: dict):
+    """Webhook для получения обновлений от attendance bot"""
+    global bot_status
+    
+    if data.get("type") == "subjects_found":
+        bot_status["subjects_found"] = True
+        bot_status["last_attendance_check"] = datetime.now().isoformat()
+    elif data.get("type") == "attendance_marked":
+        bot_status["attendance_marked"] = True
+        bot_status["subjects_found"] = False
+        bot_status["last_attendance_check"] = datetime.now().isoformat()
+    
+    return {"status": "received"}
 
 
 if __name__ == "__main__":

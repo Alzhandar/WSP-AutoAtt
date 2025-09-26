@@ -1,0 +1,20 @@
+FROM python:3.9-slim
+
+# Установка рабочей директории
+WORKDIR /app
+
+# Копирование requirements для Telegram бота
+COPY telegram_requirements.txt .
+
+# Установка зависимостей Python
+RUN pip install --no-cache-dir -r telegram_requirements.txt
+
+# Копирование файлов Telegram бота
+COPY telegram_bot.py .
+
+# Переменные среды
+ENV TELEGRAM_TOKEN=""
+ENV ATTENDANCE_API_URL="http://wsp-autoattend:8000"
+
+# Запуск Telegram бота
+CMD ["python", "telegram_bot.py"]
