@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   wsp-autoattend:
     build: .
@@ -7,6 +5,7 @@ services:
       - "8000:8000"
     environment:
       - TZ=Asia/Almaty
+      - DISPLAY=:99
     restart: unless-stopped
     volumes:
       - ./chrome_sessions:/app/chrome_sessions
