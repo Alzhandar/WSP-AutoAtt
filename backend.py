@@ -101,4 +101,4 @@ async def check_page_content(url: str = "https://pge.kbtu.kz/StudentSchedule"):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
