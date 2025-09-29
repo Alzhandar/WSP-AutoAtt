@@ -5,8 +5,8 @@ import time
 import sys
 
 # Тестируем API attendance bot с мониторингом логов
-username = "a_daribayev@kbtu.kz"
-password = "Qwerty51368211&"
+username = "ta_nurbulatuly"
+password = "1FIT2021a"
 
 def print_logs():
     """Получить и показать последние логи"""

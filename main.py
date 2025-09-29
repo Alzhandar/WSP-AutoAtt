@@ -88,9 +88,9 @@ def kill_chrome_processes():
 def check_other_pages(selenium_driver):
     """Проверяем другие страницы для поиска дисциплин"""
     pages_to_check = [
-        ("https://wsp.kbtu.kz/StudentSchedule", "Расписание студента"),
-        ("https://wsp.kbtu.kz/StudentAttendance", "Посещаемость студента"), 
-        ("https://wsp.kbtu.kz/RegistrationOnline", "Онлайн регистрация")
+        ("https://pge.kbtu.kz/StudentSchedule", "Расписание студента"),
+        ("https://pge.kbtu.kz/StudentAttendance", "Посещаемость студента"), 
+        ("https://pge.kbtu.kz/RegistrationOnline", "Онлайн регистрация")
     ]
     
     current_url = selenium_driver.current_url
@@ -174,7 +174,7 @@ def try_to_attend(selenium_driver):
 
 def main(selenium_driver):
     print("🌐 Переходим на сайт WSP КБТУ...")
-    selenium_driver.get("https://wsp.kbtu.kz/RegistrationOnline")
+    selenium_driver.get("https://pge.kbtu.kz/RegistrationOnline")
     print("✅ Сайт загружен успешно!")
 
     cycle_count = 0
@@ -278,7 +278,7 @@ def check_specific_page(url):
         
         # Сначала авторизуемся
         print("🌐 Переходим на страницу авторизации...")
-        driver.get("https://wsp.kbtu.kz/RegistrationOnline")
+        driver.get("https://pge.kbtu.kz/RegistrationOnline")
         time.sleep(3)
         
         # Проверяем нужна ли авторизация

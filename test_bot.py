@@ -4,8 +4,8 @@ import json
 import time
 
 # Тестируем API attendance bot
-username = "a_daribayev@kbtu.kz"
-password = "Qwerty51368211&"
+username = "ta_nurbulatuly"
+password = "1FIT2021a"
 
 print("🤖 Тестируем Attendance Bot API...")
 print(f"Username: {username}")

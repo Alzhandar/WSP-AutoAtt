@@ -90,7 +90,7 @@ async def get_logs():
 
 
 @app.get("/check-page")
-async def check_page_content(url: str = "https://wsp.kbtu.kz/StudentSchedule"):
+async def check_page_content(url: str = "https://pge.kbtu.kz/StudentSchedule"):
     """Проверить содержимое страницы с авторизацией"""
     from main import check_specific_page
     try:
