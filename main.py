@@ -15,7 +15,7 @@ from selenium.webdriver.common.by import By
 USERNAME = ""
 PASSWORD = ""
 UPDATE_INTERVAL = 60  
-WAIT_TIME = 10  
+WAIT_TIME = 5  
 SHOW_UI = False
 
 
@@ -99,7 +99,7 @@ def check_other_pages(selenium_driver):
         try:
             print(f"  📄 Проверяем {name}: {url}")
             selenium_driver.get(url)
-            time.sleep(3)
+            time.sleep(2)
             
             page_source = selenium_driver.page_source
             title = selenium_driver.title
@@ -183,7 +183,6 @@ def main(selenium_driver):
         current_time = datetime.now().strftime('%H:%M:%S')
         print(f"\n🔄 Цикл #{cycle_count} - {current_time}")
         
-        time.sleep(1)
         page_source = selenium_driver.page_source
         
         if 'Вход в систему' in page_source:
