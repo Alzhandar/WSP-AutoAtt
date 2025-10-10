@@ -176,7 +176,7 @@ def analyze_current_page(driver):
 def check_other_pages(selenium_driver):
     """Проверяем другие страницы для поиска дисциплин"""
     pages_to_check = [
-        http://localhost:8000/debug-session?username=ВАШ_ЛОГИН&password=ВАШ_ПАРОЛЬ        ("https://pge.kbtu.kz/StudentSchedule", "Расписание студента"),
+        ("https://pge.kbtu.kz/StudentSchedule", "Расписание студента"),
         ("https://pge.kbtu.kz/StudentAttendance", "Посещаемость студента"), 
         ("https://pge.kbtu.kz/RegistrationOnline", "Онлайн регистрация")
     ]
