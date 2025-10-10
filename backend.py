@@ -100,5 +100,17 @@ async def check_page_content(url: str = "https://pge.kbtu.kz/StudentSchedule"):
         return {"status": "error", "error": str(e)}
 
 
+@app.get("/debug-session")
+async def debug_session(username: str, password: str):
+    """Запустить отладочную сессию для диагностики проблем"""
+    from main import run_debug_session
+    try:
+        result = run_debug_session(username, password)
+        return {"status": "success", "data": result}
+    except Exception as e:
+        import traceback
+        return {"status": "error", "error": str(e), "traceback": traceback.format_exc()}
+
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
