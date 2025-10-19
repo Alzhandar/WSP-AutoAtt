@@ -14,7 +14,7 @@ from selenium.webdriver.common.by import By
 
 USERNAME = ""
 PASSWORD = ""
-UPDATE_INTERVAL = 60  
+UPDATE_INTERVAL = 40  
 WAIT_TIME = 10  # Увеличили время ожидания
 SHOW_UI = False
 
@@ -176,9 +176,9 @@ def analyze_current_page(driver):
 def check_other_pages(selenium_driver):
     """Проверяем другие страницы для поиска дисциплин"""
     pages_to_check = [
-        ("https://pge.kbtu.kz/StudentSchedule", "Расписание студента"),
-        ("https://pge.kbtu.kz/StudentAttendance", "Посещаемость студента"), 
-        ("https://pge.kbtu.kz/RegistrationOnline", "Онлайн регистрация")
+        ("https://wsp.kbtu.kz/StudentSchedule", "Расписание студента"),
+        ("https://wsp.kbtu.kz/StudentAttendance", "Посещаемость студента"), 
+        ("https://wsp.kbtu.kz/RegistrationOnline", "Онлайн регистрация")
     ]
     
     current_url = selenium_driver.current_url
@@ -390,7 +390,7 @@ def try_to_attend(selenium_driver):
 
 def main(selenium_driver):
     print("🌐 Переходим на сайт WSP КБТУ...")
-    selenium_driver.get("https://pge.kbtu.kz/RegistrationOnline")
+    selenium_driver.get("https://wsp.kbtu.kz/RegistrationOnline")
     
     # Ждем полной загрузки страницы
     print("⏳ Ожидаем полной загрузки страницы...")
@@ -648,8 +648,8 @@ def run_debug_session(username: str, password: str):
         
         # Шаг 5: Проверка других страниц
         pages_to_check = [
-            "https://pge.kbtu.kz/StudentSchedule",
-            "https://pge.kbtu.kz/StudentAttendance"
+            "https://wsp.kbtu.kz/StudentSchedule",
+            "https://wsp.kbtu.kz/StudentAttendance"
         ]
         
         other_pages_results = []
@@ -747,7 +747,7 @@ def check_specific_page(url):
         
         # Сначала авторизуемся
         print("🌐 Переходим на страницу авторизации...")
-        driver.get("https://pge.kbtu.kz/RegistrationOnline")
+        driver.get("https://wsp.kbtu.kz/RegistrationOnline")
         time.sleep(3)
         
         # Проверяем нужна ли авторизация

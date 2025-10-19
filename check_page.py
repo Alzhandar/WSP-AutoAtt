@@ -11,8 +11,8 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.common import TimeoutException
 
-USERNAME = "ta_nurbulatuly"
-PASSWORD = "1FIT2021a"
+USERNAME = "a_daribayev"
+PASSWORD = "Qwerty51368211&"
 WAIT_TIME = 10
 
 def login(driver):
@@ -84,7 +84,7 @@ def check_page_content(url):
         
         # Сначала идем на главную страницу для авторизации
         print("🌐 Переходим на главную страницу WSP...")
-        driver.get("https://pge.kbtu.kz/RegistrationOnline")
+        driver.get("https://wsp.kbtu.kz/RegistrationOnline")
         time.sleep(3)
         
         # Авторизуемся
@@ -195,4 +195,4 @@ def check_page_content(url):
 
 if __name__ == "__main__":
     # Проверяем страницу расписания студента
-    check_page_content("https://pge.kbtu.kz/StudentSchedule")
+    check_page_content("https://wsp.kbtu.kz/StudentSchedule")
