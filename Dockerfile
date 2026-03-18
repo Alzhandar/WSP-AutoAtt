@@ -25,6 +25,7 @@ COPY req.txt .
 RUN pip install --no-cache-dir -r req.txt
 
 # Копирование исходного кода
+COPY wsp_autoatt ./wsp_autoatt
 COPY backend.py .
 COPY main.py .
 
@@ -37,6 +38,7 @@ RUN chmod +x start.sh
 
 # Устанавливаем переменные среды
 ENV DISPLAY=:99
+ENV PYTHONPATH=/app
 
 # Запуск приложения с Xvfb
-CMD ["./start.sh", "backend.py"]
+CMD ["./start.sh", "-m", "wsp_autoatt.api"]

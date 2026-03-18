@@ -286,7 +286,7 @@ class BrowserMonitor:
                         value = "********" if value else ""
                         
                     if element_type == "checkbox" or element_type == "radio":
-                        value = "✓" if element.is_selected() else "☐"
+                        value = "checked" if element.is_selected() else "unchecked"
                         
                     form_data[name] = value
                 except:
