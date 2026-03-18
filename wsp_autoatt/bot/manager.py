@@ -2,7 +2,7 @@ from dataclasses import asdict, dataclass
 from threading import Lock, Thread
 from typing import Any, Dict, Optional
 
-from wsp_autoatt.bot.attendance import attend_bot
+from wsp_autoatt.bot.attendance import UserBlockedError, attend_bot
 
 
 @dataclass
@@ -35,6 +35,13 @@ class BotManager:
         try:
             attend_bot(username, password)
             self._set_status(running=False, message="Bot finished", active_username=None)
+        except UserBlockedError as exc:
+            self._set_status(
+                running=False,
+                last_error=str(exc),
+                message="Bot stopped: user blocked by WSP restrictions",
+                active_username=None,
+            )
         except Exception as exc:
             self._set_status(
                 running=False,

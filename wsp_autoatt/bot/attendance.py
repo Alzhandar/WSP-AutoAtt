@@ -23,6 +23,24 @@ WAIT_TIME = SETTINGS.wait_time
 SHOW_UI = SETTINGS.show_ui
 PGE_HOST = "pge.kbtu.kz"
 WSP_HOST = "wsp.kbtu.kz"
+ATTENDANCE_PAGE_URL = f"https://{WSP_HOST}/RegistrationOnline"
+STUDENT_ATTENDANCE_DASHBOARD_URL = f"https://{WSP_HOST}/StudentAttendance"
+BLOCKED_USER_MARKERS = [
+    "пайдаланушы бұғатталған",
+    "нет флюорографии",
+]
+ATTENDANCE_BUTTON_SELECTORS = [
+    # Vaadin canonical button: div.v-button > span.v-button-wrap > span.v-button-caption
+    "//div[@role='button' and contains(@class, 'v-button')][.//span[contains(@class, 'v-button-caption') and contains(translate(normalize-space(string(.)), 'ОТМЕТИТЬСЯ', 'отметиться'), 'отмет')]]",
+    "//div[contains(@class, 'v-button')][.//span[contains(@class, 'v-button-caption') and contains(translate(normalize-space(string(.)), 'ОТМЕТИТЬСЯ', 'отметиться'), 'отмет')]]",
+    "//span[contains(@class, 'v-button-caption') and contains(translate(normalize-space(string(.)), 'ОТМЕТИТЬСЯ', 'отметиться'), 'отмет')]/ancestor::div[contains(@class, 'v-button')][1]",
+    "//button[contains(translate(normalize-space(string(.)), 'ОТМЕТИТЬСЯ', 'отметиться'), 'отмет')]",
+    "//*[contains(translate(normalize-space(string(.)), 'ОТМЕТИТЬСЯ', 'отметиться'), 'отмет') and (@role='button' or contains(@class, 'button') or contains(@class, 'v-button'))]",
+]
+
+
+class UserBlockedError(RuntimeError):
+    """Raised when WSP account is blocked by platform restrictions."""
 
 
 def normalize_wsp_url(url: str) -> str:
@@ -45,6 +63,11 @@ def is_login_page(driver) -> bool:
     has_login_marker = any(marker in page_source for marker in login_markers)
     is_auth_url = "registrationonline" in current_url
     return has_login_marker and is_auth_url
+
+
+def is_user_blocked(page_source: str) -> bool:
+    content = page_source.lower()
+    return any(marker in content for marker in BLOCKED_USER_MARKERS)
 
 
 def attend_bot(username: str, password: str):
@@ -253,6 +276,10 @@ def check_other_pages(selenium_driver):
 def try_to_attend(selenium_driver):
     wait = WebDriverWait(selenium_driver, WAIT_TIME)
     page_source = selenium_driver.page_source
+
+    if is_user_blocked(page_source):
+        print("Пользователь заблокирован системой (например, нет флюорографии). Отметка недоступна.")
+        return
     
     if 'Нет доступных дисциплин' in page_source:
         print("ℹ  Нет доступных дисциплин для отметки посещения")
@@ -276,18 +303,9 @@ def try_to_attend(selenium_driver):
 
     try:
         print("Ищем кнопки 'Отметиться'...")
-        
-        # Пробуем несколько различных селекторов
-        selectors = [
-            "//div[span/span[@class='v-button-caption' and text()='Отметиться']]",
-            "//div[contains(@class, 'v-button') and contains(., 'Отметиться')]",
-            "//span[text()='Отметиться']/ancestor::div[contains(@class, 'v-button')]",
-            "//button[contains(., 'Отметиться')]",
-            "//*[contains(text(), 'Отметиться') and (self::button or contains(@class, 'button') or contains(@class, 'v-button'))]"
-        ]
-        
+
         button_divs = []
-        for i, selector in enumerate(selectors):
+        for i, selector in enumerate(ATTENDANCE_BUTTON_SELECTORS):
             try:
                 print(f"Пробуем селектор #{i+1}: {selector[:50]}...")
                 elements = selenium_driver.find_elements(By.XPATH, selector)
@@ -313,7 +331,7 @@ def try_to_attend(selenium_driver):
             try:
                 button_divs = wait.until(
                     EC.presence_of_all_elements_located(
-                        (By.XPATH, "//div[span/span[@class='v-button-caption' and text()='Отметиться']]")
+                        (By.XPATH, ATTENDANCE_BUTTON_SELECTORS[0])
                     )
                 )
             except TimeoutException:
@@ -419,7 +437,7 @@ def try_to_attend(selenium_driver):
 
 def main(selenium_driver):
     print("Переходим на сайт WSP КБТУ...")
-    selenium_driver.get(normalize_wsp_url("https://pge.kbtu.kz/RegistrationOnline"))
+    selenium_driver.get(ATTENDANCE_PAGE_URL)
     
     # Ждем полной загрузки страницы
     print("Ожидаем полной загрузки страницы...")
@@ -443,6 +461,12 @@ def main(selenium_driver):
             login(selenium_driver)
         else:
             print("Пользователь уже авторизован")
+
+        page_source = selenium_driver.page_source
+        if is_user_blocked(page_source):
+            raise UserBlockedError(
+                "Пользователь заблокирован в WSP (например, нет флюорографии)."
+            )
 
         # Каждый 10-й цикл делаем детальный анализ страницы
         if cycle_count % 10 == 0:
@@ -589,7 +613,7 @@ def run_debug_session(username: str, password: str):
         
         # Шаг 1: Переход на сайт
         print("Переходим на сайт...")
-        driver.get(normalize_wsp_url("https://pge.kbtu.kz/RegistrationOnline"))
+        driver.get(ATTENDANCE_PAGE_URL)
         time.sleep(5)
         
         result["steps"].append(f"Переход на сайт: {driver.current_url}")
@@ -820,12 +844,15 @@ def check_specific_page(url):
         result["has_tables"] = "<table" in driver.page_source
         result["has_vaadin_grid"] = "v-grid" in driver.page_source or "vaadin-grid" in driver.page_source
         result["has_buttons"] = "отметиться" in page_source
+        result["user_blocked"] = is_user_blocked(page_source)
         
         # Проверяем на ошибки
         if "404" in driver.page_source or "not found" in page_source:
             result["error"] = "Page not found (404)"
         elif "403" in driver.page_source or "forbidden" in page_source:
             result["error"] = "Access forbidden (403)"
+        elif result["user_blocked"]:
+            result["error"] = "User blocked by WSP restrictions"
         elif "error" in page_source:
             result["error"] = "Page contains error messages"
         else:

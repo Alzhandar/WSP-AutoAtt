@@ -6,6 +6,7 @@ chrome_sessions/
 logs/
 screenshots/
 api_logs/
+debug_artifacts/
 
 __pycache__/
 *.py[cod]
